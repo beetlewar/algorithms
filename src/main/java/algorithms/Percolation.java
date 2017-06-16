@@ -1,9 +1,7 @@
-package algorithms;
-
-import edu.princeton.cs.algs4.QuickUnionUF;
+import edu.princeton.cs.algs4.WeightedQuickUnionUF;
 
 public class Percolation {
-    private final QuickUnionUF _quickUnionFind;
+    private final WeightedQuickUnionUF _quickUnionFind;
     private final int _n;
     private final boolean[] _openSites;
     private int _numOpen;
@@ -21,7 +19,7 @@ public class Percolation {
 
         int quickUnionFindSize = arraySize + 2; // 2 - additional fake items (top and bottom)
 
-        _quickUnionFind = new QuickUnionUF(quickUnionFindSize);
+        _quickUnionFind = new WeightedQuickUnionUF(quickUnionFindSize);
     }
 
     public void open(int row, int col) {
