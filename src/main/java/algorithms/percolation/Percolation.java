@@ -1,12 +1,32 @@
+/*-------------------------------------------------------
+Prokofev Ilya
+6/17/2017
+Implements percolation algorithms, that allows to determine
+connectivity bottom points to top
+-------------------------------------------------------*/
+
 import edu.princeton.cs.algs4.WeightedQuickUnionUF;
 
 public class Percolation {
+    // object to determine percolation
     private final WeightedQuickUnionUF _percolationQuickUnionFind;
+
+    // object to determine site fullness
     private final WeightedQuickUnionUF _fullnessQuickUnionFind;
+
+    // number of sites in a row/col
     private final int _n;
+
+    // array of open sites - site at index is open if it's set to true
     private final boolean[] _openSites;
+
+    // current number of open sites
     private int _numOpen;
 
+    /*
+    Constructs new object with n by n sites
+    Top left is row = 1 and col = 1 and bottom right is row = n and col = n
+     */
     public Percolation(int n) {
         if (n <= 0) {
             throw new IllegalArgumentException("'n' must be >= 0.");
@@ -24,6 +44,9 @@ public class Percolation {
         _fullnessQuickUnionFind = new WeightedQuickUnionUF(fullnessQuickUnionFindSize);
     }
 
+    /*
+    Opens new item (site) in a row and col position.
+     */
     public void open(int row, int col) {
         checkRowAndCol(row, col);
 
@@ -68,14 +91,19 @@ public class Percolation {
         }
     }
 
+    /*
+    Returns true if site is open at row and col position
+     */
     public boolean isOpen(int row, int col) {
         checkRowAndCol(row, col);
 
         int index = getArrayIndex(row, col);
-        boolean isOpen = _openSites[index];
-        return isOpen;
+        return _openSites[index];
     }
 
+    /*
+    Returns true if site is full (connected with any top site) at row and col position
+     */
     public boolean isFull(int row, int col) {
         checkRowAndCol(row, col);
 
@@ -90,25 +118,35 @@ public class Percolation {
         return _fullnessQuickUnionFind.connected(unionFindIndex, topFakeIndex);
     }
 
+    /*
+    Returns number of open sites
+     */
     public int numberOfOpenSites() {
         return _numOpen;
     }
 
+    /*
+    Returns true if system percolates
+     */
     public boolean percolates() {
         int topFakeIndex = getTopFakeIndex();
         int bottomFakeIndex = getBottomFakeIndex();
 
-        boolean percolates = _percolationQuickUnionFind.connected(bottomFakeIndex, topFakeIndex);
-
-        return percolates;
+        return _percolationQuickUnionFind.connected(bottomFakeIndex, topFakeIndex);
     }
 
+    /*
+    Checks row and col parameters and throws exception if they are invalid
+     */
     private void checkRowAndCol(int row, int col) {
         if (row <= 0 || col <= 0 || row > _n || col > _n) {
             throw new IndexOutOfBoundsException();
         }
     }
 
+    /*
+    Connects specified site with neighbour if it's open
+     */
     private void connectWithNeighbourIfItsOpen(
             int neighbourRow,
             int neighbourCol,
@@ -125,38 +163,61 @@ public class Percolation {
         }
     }
 
+    /*
+    Returns true if row is top
+     */
     private boolean isTop(int row) {
         return row == 1;
     }
 
+    /*
+    Returns true if row is bottom
+     */
     private boolean isBottom(int row) {
         return row == _n;
     }
 
+    /*
+    Returns true if col is left
+     */
     private boolean isLeft(int col) {
         return col == 1;
     }
 
+    /*
+    Returns true if col is right
+     */
     private boolean isRight(int col) {
         return col == _n;
     }
 
+    /*
+    Returns open site array index
+     */
     private int getArrayIndex(int row, int col) {
         int rowIndex = row - 1;
         int colIndex = col - 1;
 
-        int index = rowIndex * _n + colIndex;
-        return index;
+        return rowIndex * _n + colIndex;
     }
 
+    /*
+    Returns index of union find object array
+     */
     private static int getUnionFindIndex(int arrayIndex) {
         return arrayIndex + 1;
     }
 
+    /*
+    Returns index of top fake site of union find array
+     */
     private static int getTopFakeIndex() {
         return 0;
     }
 
+    /*
+    Returns index of bottom fake site of union find array
+     */
     private int getBottomFakeIndex() {
         return _openSites.length + 1;
     }
