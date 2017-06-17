@@ -33,7 +33,7 @@ public class PercolationStatsTests {
 
         double stddev = percolationStats.stddev();
 
-        Assert.assertEquals(0.0, stddev, 0.1);
+        Assert.assertTrue(Double.isNaN(stddev));
     }
 
     @Test
@@ -69,7 +69,7 @@ public class PercolationStatsTests {
         double confidenceLo = percolationStats.confidenceLo();
         double confidenceHi = percolationStats.confidenceHi();
 
-        Assert.assertEquals(1.0, confidenceLo, 0.1);
-        Assert.assertEquals(1.0, confidenceHi, 0.1);
+        Assert.assertTrue(Double.isNaN(confidenceLo));
+        Assert.assertTrue(Double.isNaN(confidenceHi));
     }
 }

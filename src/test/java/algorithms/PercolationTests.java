@@ -91,11 +91,11 @@ public class PercolationTests {
 
     @Test
     public void IsFull_Full_ReturnsTrue() {
-        Percolation percolation = new Percolation(1);
+        Percolation percolation = new Percolation(10);
 
-        percolation.open(1, 1);
+        percolation.open(1, 5);
 
-        boolean isFull = percolation.isFull(1, 1);
+        boolean isFull = percolation.isFull(1, 5);
 
         Assert.assertTrue(isFull);
     }
@@ -125,5 +125,19 @@ public class PercolationTests {
         boolean percolates = percolation.percolates();
 
         Assert.assertTrue(percolates);
+    }
+
+    @Test
+    public void UseCase1_Row1Col1NotFull() {
+        Percolation percolation = new Percolation(3);
+
+        percolation.open(3, 1);
+        percolation.open(1, 3);
+        percolation.open(2, 3);
+        percolation.open(3, 3);
+
+        Assert.assertTrue(percolation.isOpen(3, 1));
+        Assert.assertTrue(percolation.percolates());
+        Assert.assertFalse(percolation.isFull(3, 1));
     }
 }

@@ -1,7 +1,8 @@
 import edu.princeton.cs.algs4.WeightedQuickUnionUF;
 
 public class Percolation {
-    private final WeightedQuickUnionUF _quickUnionFind;
+    private final WeightedQuickUnionUF _percolationQuickUnionFind;
+    private final WeightedQuickUnionUF _fullnessQuickUnionFind;
     private final int _n;
     private final boolean[] _openSites;
     private int _numOpen;
@@ -14,12 +15,13 @@ public class Percolation {
         _n = n;
 
         int arraySize = n * n;
-
         _openSites = new boolean[arraySize];
 
         int quickUnionFindSize = arraySize + 2; // 2 - additional fake items (top and bottom)
+        _percolationQuickUnionFind = new WeightedQuickUnionUF(quickUnionFindSize);
 
-        _quickUnionFind = new WeightedQuickUnionUF(quickUnionFindSize);
+        int fullnessQuickUnionFindSize = arraySize + 1; // 1 - additional fake item (top)
+        _fullnessQuickUnionFind = new WeightedQuickUnionUF(fullnessQuickUnionFindSize);
     }
 
     public void open(int row, int col) {
@@ -39,7 +41,8 @@ public class Percolation {
         if (isTop(row)) {
             // connect with top fake
             int topFakeIndex = getTopFakeIndex();
-            _quickUnionFind.union(unionFindIndex, topFakeIndex);
+            _percolationQuickUnionFind.union(unionFindIndex, topFakeIndex);
+            _fullnessQuickUnionFind.union(unionFindIndex, topFakeIndex);
         } else {
             // connect with upper neighbour if it's open
             connectWithNeighbourIfItsOpen(row - 1, col, index);
@@ -48,7 +51,7 @@ public class Percolation {
         if (isBottom(row)) {
             // connect with bottom fake
             int bottomFakeIndex = getBottomFakeIndex();
-            _quickUnionFind.union(unionFindIndex, bottomFakeIndex);
+            _percolationQuickUnionFind.union(unionFindIndex, bottomFakeIndex);
         } else {
             // connect with bottom neighbour if it's open
             connectWithNeighbourIfItsOpen(row + 1, col, index);
@@ -81,9 +84,10 @@ public class Percolation {
         }
 
         int arrayIndex = getArrayIndex(row, col);
+        int unionFindIndex = getUnionFindIndex(arrayIndex);
         int topFakeIndex = getTopFakeIndex();
 
-        return _quickUnionFind.connected(arrayIndex, topFakeIndex);
+        return _fullnessQuickUnionFind.connected(unionFindIndex, topFakeIndex);
     }
 
     public int numberOfOpenSites() {
@@ -94,7 +98,7 @@ public class Percolation {
         int topFakeIndex = getTopFakeIndex();
         int bottomFakeIndex = getBottomFakeIndex();
 
-        boolean percolates = _quickUnionFind.connected(bottomFakeIndex, topFakeIndex);
+        boolean percolates = _percolationQuickUnionFind.connected(bottomFakeIndex, topFakeIndex);
 
         return percolates;
     }
@@ -116,7 +120,8 @@ public class Percolation {
             int neighbourUnionFindIndex = getUnionFindIndex(neighbourArrayIndex);
             int ownUnionFindIndex = getUnionFindIndex(ownIndex);
 
-            _quickUnionFind.union(ownUnionFindIndex, neighbourUnionFindIndex);
+            _percolationQuickUnionFind.union(ownUnionFindIndex, neighbourUnionFindIndex);
+            _fullnessQuickUnionFind.union(ownUnionFindIndex, neighbourUnionFindIndex);
         }
     }
 

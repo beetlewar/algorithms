@@ -46,32 +46,24 @@ public class PercolationStats {
     }
 
     public double stddev() {
-        if (_sampleMeans.length == 1) {
-            return 0;
-        }
-
         return StdStats.stddev(_sampleMeans);
     }
 
     public double confidenceLo() {
-        if (_sampleMeans.length == 1) {
-            return 1;
-        }
-
         return confidence(-1);
     }
 
     public double confidenceHi() {
-        if (_sampleMeans.length == 1) {
-            return 1;
-        }
-
         return confidence(1);
     }
 
     private double confidence(int sign) {
-        double mean = mean();
         double stddev = stddev();
+        if (Double.isNaN(stddev)) {
+            return Double.NaN;
+        }
+
+        double mean = mean();
         double sqrtTrials = Math.sqrt(_sampleMeans.length);
 
         return mean + (1.96 * stddev / sqrtTrials) * sign;
