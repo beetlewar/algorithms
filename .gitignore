@@ -94,5 +94,5 @@ fabric.properties
 
 # -------------CUSTOM--------------
 
-!/src/main/resources/**
 /target/**
+!/src/main/resources/**
