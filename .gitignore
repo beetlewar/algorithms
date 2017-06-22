@@ -95,4 +95,4 @@ fabric.properties
 # -------------CUSTOM--------------
 
 /target/**
-!/src/main/resources/**
+!/src/main/resources/** 

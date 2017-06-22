@@ -7,9 +7,8 @@ public class Permutation {
 
         int numRandomValues = Integer.parseInt(args[0]);
 
-        for (int i = 0; i < numRandomValues; i++) {
-            String inputString = StdIn.readString();
-            queue.enqueue(inputString);
+        for(String str: StdIn.readAllStrings()){
+            queue.enqueue(str);
         }
 
         for (int i = 0; i < numRandomValues; i++) {
