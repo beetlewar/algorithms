@@ -1,6 +1,5 @@
-package algorithms.queueStack;
-
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 public class Deque<Item> implements Iterable<Item> {
     private Node _first;
@@ -19,6 +18,10 @@ public class Deque<Item> implements Iterable<Item> {
     }
 
     public void addFirst(Item item) {
+        if (item == null) {
+            throw new IllegalArgumentException();
+        }
+
         Node first = new Node();
         first.Item = item;
         first.Next = _first;
@@ -36,6 +39,10 @@ public class Deque<Item> implements Iterable<Item> {
     }
 
     public void addLast(Item item) {
+        if (item == null) {
+            throw new IllegalArgumentException();
+        }
+
         Node last = new Node();
         last.Item = item;
         last.Prev = _last;
@@ -53,6 +60,10 @@ public class Deque<Item> implements Iterable<Item> {
     }
 
     public Item removeFirst() {
+        if (isEmpty()) {
+            throw new NoSuchElementException();
+        }
+
         Item item = (Item) _first.Item;
         _first = _first.Next;
 
@@ -68,6 +79,10 @@ public class Deque<Item> implements Iterable<Item> {
     }
 
     public Item removeLast() {
+        if (isEmpty()) {
+            throw new NoSuchElementException();
+        }
+
         Item item = (Item) _last.Item;
 
         _last = _last.Prev;
@@ -96,7 +111,7 @@ public class Deque<Item> implements Iterable<Item> {
     private class DequeIterator<Item> implements Iterator<Item> {
         private Node _nextNode;
 
-        public DequeIterator(Node firstNode){
+        public DequeIterator(Node firstNode) {
             _nextNode = firstNode;
         }
 
@@ -105,12 +120,17 @@ public class Deque<Item> implements Iterable<Item> {
         }
 
         public Item next() {
-            Item item = (Item)_nextNode.Item;
+            if (!hasNext()) {
+                throw new NoSuchElementException();
+            }
+
+            Item item = (Item) _nextNode.Item;
             _nextNode = _nextNode.Next;
             return item;
         }
 
         public void remove() {
+            throw new UnsupportedOperationException();
         }
     }
 }
