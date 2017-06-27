@@ -1,9 +1,26 @@
 package algorithms.colinear;
 
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 public class BruteCollinearPointsTests {
+    @Rule
+    public ExpectedException exception = ExpectedException.none();
+
+    @Test
+    public void ctor_equalPoints_throwsException() {
+        exception.expect(IllegalArgumentException.class);
+
+        Point[] points = new Point[]{
+                new Point(1, 1),
+                new Point(1, 1)
+        };
+
+        new BruteCollinearPoints(points);
+    }
+
     @Test
     public void segments_returnsSingleExpectedSegment() {
         Point[] points = new Point[]{

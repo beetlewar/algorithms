@@ -1,11 +1,26 @@
 package algorithms.colinear;
 
+import java.util.Arrays;
 import java.util.Comparator;
 
 public class BruteCollinearPoints {
     private final LineSegment[] _segments;
 
     public BruteCollinearPoints(Point[] points) {
+        if(points == null)
+            throw new IllegalArgumentException();
+
+        for (Point p : points){
+            if( p == null)
+                throw new IllegalArgumentException();
+        }
+
+        Arrays.sort(points);
+        for(int i = 0; i < points.length - 1; i++) {
+            if (points[i].compareTo(points[i + 1]) == 0)
+                throw new IllegalArgumentException();
+        }
+
         LinkedList<LineSegment> lineSegments = new LinkedList<LineSegment>();
 
         for (Point point : points) {
