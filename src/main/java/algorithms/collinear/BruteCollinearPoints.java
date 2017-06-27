@@ -1,5 +1,3 @@
-package algorithms.colinear;
-
 import java.util.Comparator;
 
 public class BruteCollinearPoints {
@@ -27,7 +25,6 @@ public class BruteCollinearPoints {
 
     private LineSegment[] LineSegmentsToArray(LinkedList<LineSegment> lineSegments) {
         // copy to array (generic toArray doesn't work)
-
         Object[] arr = lineSegments.toArray();
 
         LineSegment[] segments = new LineSegment[arr.length];

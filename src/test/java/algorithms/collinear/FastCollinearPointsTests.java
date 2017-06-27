@@ -1,9 +1,7 @@
-package algorithms.colinear;
-
 import org.junit.Assert;
 import org.junit.Test;
 
-public class BruteCollinearPointsTests {
+public class FastCollinearPointsTests {
     @Test
     public void segments_returnsSingleExpectedSegment() {
         Point[] points = new Point[]{
@@ -13,12 +11,12 @@ public class BruteCollinearPointsTests {
                 new Point(4, 4)
         };
 
-        BruteCollinearPoints brute = new BruteCollinearPoints(points);
+        FastCollinearPoints fast = new FastCollinearPoints(points);
 
-        LineSegment[] segments = brute.segments();
+        LineSegment[] segments = fast.segments();
 
         Assert.assertEquals(1, segments.length);
-        Assert.assertEquals(1, brute.numberOfSegments());
+        Assert.assertEquals(1, fast.numberOfSegments());
 
         String segmentsString = segments[0].toString();
 
@@ -29,21 +27,19 @@ public class BruteCollinearPointsTests {
     public void segments_returnsTwoExpectedSegments() {
         Point[] points = new Point[]{
                 new Point(1, 1),
-
-                new Point(2, 2),
+                new Point(2, 3),
                 new Point(3, 3),
                 new Point(4, 4),
-
-                new Point(2, 3),
                 new Point(3, 5),
                 new Point(4, 7),
+                new Point(2, 2),
         };
 
-        BruteCollinearPoints brute = new BruteCollinearPoints(points);
+        FastCollinearPoints fast = new FastCollinearPoints(points);
 
-        LineSegment[] segments = brute.segments();
+        LineSegment[] segments = fast.segments();
 
         Assert.assertEquals(2, segments.length);
-        Assert.assertEquals(2, brute.numberOfSegments());
+        Assert.assertEquals(2, fast.numberOfSegments());
     }
 }
