@@ -1,5 +1,3 @@
-package algorithms.colinear;
-
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -71,14 +69,14 @@ public class PointTests {
     }
 
     @Test
-    public void slopeTo_equalPoints_negativeInfinity(){
+    public void slopeTo_equalPoints_negativeInfinity() {
         Point point = new Point(1, 2);
 
         Assert.assertEquals(0, Double.compare(Double.NEGATIVE_INFINITY, point.slopeTo(point)));
     }
 
     @Test
-    public void slopeOrder_firstPointSlopeLessSeconds_returnsNegative(){
+    public void slopeOrder_firstPointSlopeLessSeconds_returnsNegative() {
         Point thisPoint = new Point(1, 1);
         Point thatPoint1 = new Point(3, 2);
         Point thatPoint2 = new Point(2, 4);
@@ -90,7 +88,7 @@ public class PointTests {
     }
 
     @Test
-    public void slopeOrder_firstPointSlopeBiggerSeconds_returnsPositive(){
+    public void slopeOrder_firstPointSlopeBiggerSeconds_returnsPositive() {
         Point thisPoint = new Point(1, 1);
         Point thatPoint1 = new Point(2, 4);
         Point thatPoint2 = new Point(3, 2);
@@ -102,7 +100,7 @@ public class PointTests {
     }
 
     @Test
-    public void slopeOrder_slopesEqual_returnsZero(){
+    public void slopeOrder_slopesEqual_returnsZero() {
         Point thisPoint = new Point(1, 1);
         Point thatPoint1 = new Point(2, 2);
         Point thatPoint2 = new Point(3, 3);
@@ -114,7 +112,7 @@ public class PointTests {
     }
 
     @Test
-    public void slopeOrder_secondVertical_returnsNegative(){
+    public void slopeOrder_secondVertical_returnsNegative() {
         Point thisPoint = new Point(1, 1);
         Point thatPoint1 = new Point(3, 3);
         Point thatPoint2 = new Point(1, 2);
@@ -126,7 +124,7 @@ public class PointTests {
     }
 
     @Test
-    public void slopeOrder_firstVertical_returnsPositive(){
+    public void slopeOrder_firstVertical_returnsPositive() {
         Point thisPoint = new Point(1, 1);
         Point thatPoint1 = new Point(1, 2);
         Point thatPoint2 = new Point(3, 3);
@@ -138,7 +136,7 @@ public class PointTests {
     }
 
     @Test
-    public void slopeOrder_bothVertical_returnsZero(){
+    public void slopeOrder_bothVertical_returnsZero() {
         Point thisPoint = new Point(1, 1);
         Point thatPoint1 = new Point(1, 2);
         Point thatPoint2 = new Point(1, 3);

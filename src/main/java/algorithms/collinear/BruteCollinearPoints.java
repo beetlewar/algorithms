@@ -1,5 +1,3 @@
-package algorithms.colinear;
-
 import java.util.Arrays;
 import java.util.Comparator;
 
@@ -7,29 +5,19 @@ public class BruteCollinearPoints {
     private final LineSegment[] _segments;
 
     public BruteCollinearPoints(Point[] points) {
-        if(points == null)
-            throw new IllegalArgumentException();
+        checkPoints(points);
 
-        for (Point p : points){
-            if( p == null)
-                throw new IllegalArgumentException();
-        }
-
-        Arrays.sort(points);
-        for(int i = 0; i < points.length - 1; i++) {
-            if (points[i].compareTo(points[i + 1]) == 0)
-                throw new IllegalArgumentException();
-        }
+        Point[] pointsCopy = Arrays.copyOf(points, points.length);
 
         LinkedList<LineSegment> lineSegments = new LinkedList<LineSegment>();
 
-        for (Point point : points) {
-            for (Point slopingPoint : points) {
+        for (Point point : pointsCopy) {
+            for (Point slopingPoint : pointsCopy) {
                 if (slopingPoint == point) {
                     // don't observe current point
                     continue;
                 }
-                LineSegment lineSegment = linkPoints(points, point, slopingPoint);
+                LineSegment lineSegment = linkPoints(pointsCopy, point, slopingPoint);
 
                 if(lineSegment != null){
                     lineSegments.addItem(lineSegment);
@@ -40,9 +28,25 @@ public class BruteCollinearPoints {
         _segments = LineSegmentsToArray(lineSegments);
     }
 
+    private void checkPoints(Point[] points) {
+        if(points == null)
+            throw new IllegalArgumentException();
+
+        for (Point p : points){
+            if( p == null)
+                throw new IllegalArgumentException();
+        }
+
+        Arrays.sort(points);
+
+        for(int i = 0; i < points.length - 1; i++) {
+            if (points[i].compareTo(points[i + 1]) == 0)
+                throw new IllegalArgumentException();
+        }
+    }
+
     private LineSegment[] LineSegmentsToArray(LinkedList<LineSegment> lineSegments) {
         // copy to array (generic toArray doesn't work)
-
         Object[] arr = lineSegments.toArray();
 
         LineSegment[] segments = new LineSegment[arr.length];
