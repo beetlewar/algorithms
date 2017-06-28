@@ -1,60 +1,116 @@
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class FastCollinearPoints {
     private final LineSegment[] _lineSegments;
 
+    private class Line {
+        public Point FirstPoint;
+        public Point LastPoint;
+        public double Slope;
+
+        public Line(Point firstPoint, Point lastPoint, double slope) {
+            FirstPoint = firstPoint;
+            LastPoint = lastPoint;
+            Slope = slope;
+        }
+    }
+
     public FastCollinearPoints(Point[] points) {
         checkPoints(points);
 
-        Point[] pointsCopy = Arrays.copyOf(points, points.length);
+        Point[] sortedPoints = Arrays.copyOf(points, points.length);
 
-        LineSegment[] lineSegments = new LineSegment[pointsCopy.length];
-        int lineIndex = 0;
+        Arrays.sort(sortedPoints);
 
-        for (Point point : pointsCopy) {
-            Index[] sortedPoints = sortPoints(point, pointsCopy);
+        List<Line> lines = new ArrayList<Line>();
 
-            double currentSlope = sortedPoints[0].Slope;
-            int startIndexOfIndex = 0;
+        // - 3 - means we observe except last 3 points
+        for (int i = 0; i < sortedPoints.length - 3; i++){
+            List<Line> newLines = getLines(sortedPoints, i, lines);
+            lines.addAll(newLines);
+        }
 
-            for (int i = 1; i <= sortedPoints.length; i++) {
-                LineSegment newLineSegment = null;
+        _lineSegments = CreateLineSegments(lines);
+    }
 
-                if (i == sortedPoints.length) {
-                    newLineSegment = createLineSegment(point, sortedPoints, startIndexOfIndex, i - 1);
-                } else {
-                    Index index = sortedPoints[i];
+    private List<Line> getLines(Point[] points, int pointIndex, List<Line> lines){
+        if(points.length < 4){
+            return new ArrayList<Line>();
+        }
 
-                    if (Double.compare(currentSlope, index.Slope) != 0) {
-                        newLineSegment = createLineSegment(point, sortedPoints, startIndexOfIndex, i - 1);
-                        startIndexOfIndex = i;
-                        currentSlope = index.Slope;
-                    }
+        Point startPoint = points[pointIndex];
+
+        Point[] slopePoints = Arrays.copyOfRange(points, pointIndex + 1, points.length);
+
+        Arrays.sort(slopePoints, startPoint.slopeOrder());
+
+        List<Line> newLines = new ArrayList<Line>();
+
+        int numPoints = 2;
+        Point maxPoint = slopePoints[0];
+        double prevSlope = startPoint.slopeTo(maxPoint);
+
+        for(int i = 1; i < slopePoints.length; i++){
+            Point point = slopePoints[i];
+
+            double slope = startPoint.slopeTo(point);
+
+            if(Double.compare(slope, prevSlope) == 0) {
+                if(point.compareTo(maxPoint) > 0){
+                    maxPoint = point;
                 }
 
-                if(newLineSegment != null){
-                    boolean hasSegment = false;
-                    // search distinct segments
-                    for(int j = 0; j < lineIndex; j++){
-                        LineSegment distinctSegment = lineSegments[j];
-                        if(newLineSegment.toString().equals(distinctSegment.toString())){
-                            hasSegment = true;
-                            break;
-                        }
-                    }
+                numPoints++;
+                continue;
+            }
 
-                    if(!hasSegment) {
-                        lineSegments[lineIndex] = newLineSegment;
-                        lineIndex++;
-                    }
+            if(numPoints >= 4) {
+                if (!hasLine(lines, point, prevSlope)) {
+                    Line newLine = new Line(startPoint, maxPoint, prevSlope);
+                    newLines.add(newLine);
                 }
+            }
+
+            prevSlope = slope;
+            numPoints = 2;
+            maxPoint = point;
+        }
+
+        if(numPoints >= 4) {
+            if (!hasLine(lines, maxPoint, prevSlope)) {
+                Line newLine = new Line(startPoint, maxPoint, prevSlope);
+                newLines.add(newLine);
             }
         }
 
-        _lineSegments = new LineSegment[lineIndex];
-        for(int i = 0; i < lineIndex; i++){
-            _lineSegments[i] = lineSegments[i];
+        return newLines;
+    }
+
+    private boolean hasLine(
+            Iterable<Line> lines,
+            Point lastPoint,
+            double slope) {
+        for (Line line : lines) {
+            if (line.LastPoint == lastPoint && Double.compare(line.Slope, slope) == 0) {
+                return true;
+            }
         }
+
+        return false;
+    }
+
+    private LineSegment[] CreateLineSegments(List<Line> lines) {
+        LineSegment[] segments = new LineSegment[lines.size()];
+
+        for (int i = 0; i < lines.size(); i++) {
+            Line line = lines.get(i);
+
+            segments[i] = new LineSegment(line.FirstPoint, line.LastPoint);
+        }
+
+        return segments;
     }
 
     private void checkPoints(Point[] points) {
@@ -72,7 +128,6 @@ public class FastCollinearPoints {
                 throw new IllegalArgumentException();
         }
     }
-
 
     private LineSegment createLineSegment(Point startPoint, Index[] sortedPoints, int startIndex, int endIndex){
         int count = endIndex - startIndex + 1;

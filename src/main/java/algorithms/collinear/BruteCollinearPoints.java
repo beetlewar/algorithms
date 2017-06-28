@@ -8,13 +8,16 @@ public class BruteCollinearPoints {
     public BruteCollinearPoints(Point[] points) {
         checkPoints(points);
 
-        Arrays.sort(points);
+        Point[] sortedPoints = Arrays.copyOf(points, points.length);
+
+        Arrays.sort(sortedPoints);
 
         List<Line> lines = new ArrayList<Line>();
 
-        for (int i = 0; i < points.length - 1; i++) {
-            for (int j = i + 1; j < points.length; j++) {
-                Line line = getLine(points, i, j, lines);
+        // - 3 - means we observe except last 3 points
+        for (int i = 0; i < sortedPoints.length - 3; i++) {
+            for (int j = i + 1; j < sortedPoints.length; j++) {
+                Line line = getLine(sortedPoints, i, j, lines);
                 if (line != null) {
                     lines.add(line);
                 }
