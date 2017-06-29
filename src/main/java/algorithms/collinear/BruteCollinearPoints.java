@@ -6,11 +6,19 @@ public class BruteCollinearPoints {
     private final LineSegment[] _segments;
 
     public BruteCollinearPoints(Point[] points) {
-        checkPoints(points);
+        if (points == null)
+            throw new IllegalArgumentException();
+
+        for (Point p : points) {
+            if (p == null)
+                throw new IllegalArgumentException();
+        }
 
         Point[] sortedPoints = Arrays.copyOf(points, points.length);
 
         Arrays.sort(sortedPoints);
+
+        checkPoints(sortedPoints);
 
         List<Line> lines = new ArrayList<Line>();
 
@@ -27,6 +35,13 @@ public class BruteCollinearPoints {
         _segments = CreateLineSegments(lines);
     }
 
+    private void checkPoints(Point[] sortedPoints) {
+        for (int i = 0; i < sortedPoints.length - 1; i++) {
+            if (sortedPoints[i].compareTo(sortedPoints[i + 1]) == 0)
+                throw new IllegalArgumentException();
+        }
+    }
+
     private Line getLine(Point[] points, int startIndex, int nextIndex, Iterable<Line> lines) {
         Point startPoint = points[startIndex];
         Point nextPoint = points[nextIndex];
@@ -36,7 +51,7 @@ public class BruteCollinearPoints {
         Point lastPoint = null;
         int numSlopePoints = 2;
 
-        for (int i = startIndex + 2; i < points.length; i++) {
+        for (int i = nextIndex + 1; i < points.length; i++) {
             Point testPoint = points[i];
             double testSlope = startPoint.slopeTo(testPoint);
 
@@ -82,29 +97,12 @@ public class BruteCollinearPoints {
         return false;
     }
 
-    private void checkPoints(Point[] points) {
-        if (points == null)
-            throw new IllegalArgumentException();
-
-        for (Point p : points) {
-            if (p == null)
-                throw new IllegalArgumentException();
-        }
-
-        Arrays.sort(points);
-
-        for (int i = 0; i < points.length - 1; i++) {
-            if (points[i].compareTo(points[i + 1]) == 0)
-                throw new IllegalArgumentException();
-        }
-    }
-
     public int numberOfSegments() {
         return _segments.length;
     }
 
     public LineSegment[] segments() {
-        return _segments;
+        return Arrays.copyOf(_segments, _segments.length);
     }
 
     private class Line {
@@ -119,4 +117,3 @@ public class BruteCollinearPoints {
         }
     }
 }
-

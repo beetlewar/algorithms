@@ -5,39 +5,41 @@ import java.util.List;
 public class FastCollinearPoints {
     private final LineSegment[] _lineSegments;
 
-    private class Line {
-        public Point FirstPoint;
-        public Point LastPoint;
-        public double Slope;
-
-        public Line(Point firstPoint, Point lastPoint, double slope) {
-            FirstPoint = firstPoint;
-            LastPoint = lastPoint;
-            Slope = slope;
-        }
-    }
-
     public FastCollinearPoints(Point[] points) {
-        checkPoints(points);
+        if (points == null)
+            throw new IllegalArgumentException();
+
+        for (Point p : points) {
+            if (p == null)
+                throw new IllegalArgumentException();
+        }
 
         Point[] sortedPoints = Arrays.copyOf(points, points.length);
 
         Arrays.sort(sortedPoints);
 
+        checkPointDuplicates(sortedPoints);
+
         List<Line> lines = new ArrayList<Line>();
 
         // - 3 - means we observe except last 3 points
-        for (int i = 0; i < sortedPoints.length - 3; i++){
-            List<Line> newLines = getLines(sortedPoints, i, lines);
-            lines.addAll(newLines);
+        for (int i = 0; i < sortedPoints.length - 3; i++) {
+            getLines(sortedPoints, i, lines);
         }
 
         _lineSegments = CreateLineSegments(lines);
     }
 
-    private List<Line> getLines(Point[] points, int pointIndex, List<Line> lines){
-        if(points.length < 4){
-            return new ArrayList<Line>();
+    private void checkPointDuplicates(Point[] sortedPoints) {
+        for (int i = 0; i < sortedPoints.length - 1; i++) {
+            if (sortedPoints[i].compareTo(sortedPoints[i + 1]) == 0)
+                throw new IllegalArgumentException();
+        }
+    }
+
+    private void getLines(Point[] points, int pointIndex, List<Line> lines) {
+        if (points.length < 4) {
+            return;
         }
 
         Point startPoint = points[pointIndex];
@@ -46,19 +48,17 @@ public class FastCollinearPoints {
 
         Arrays.sort(slopePoints, startPoint.slopeOrder());
 
-        List<Line> newLines = new ArrayList<Line>();
-
         int numPoints = 2;
         Point maxPoint = slopePoints[0];
         double prevSlope = startPoint.slopeTo(maxPoint);
 
-        for(int i = 1; i < slopePoints.length; i++){
+        for (int i = 1; i < slopePoints.length; i++) {
             Point point = slopePoints[i];
 
             double slope = startPoint.slopeTo(point);
 
-            if(Double.compare(slope, prevSlope) == 0) {
-                if(point.compareTo(maxPoint) > 0){
+            if (Double.compare(slope, prevSlope) == 0) {
+                if (point.compareTo(maxPoint) > 0) {
                     maxPoint = point;
                 }
 
@@ -66,10 +66,10 @@ public class FastCollinearPoints {
                 continue;
             }
 
-            if(numPoints >= 4) {
-                if (!hasLine(lines, point, prevSlope)) {
+            if (numPoints >= 4) {
+                if (!hasLine(lines, maxPoint, prevSlope)) {
                     Line newLine = new Line(startPoint, maxPoint, prevSlope);
-                    newLines.add(newLine);
+                    lines.add(newLine);
                 }
             }
 
@@ -78,14 +78,12 @@ public class FastCollinearPoints {
             maxPoint = point;
         }
 
-        if(numPoints >= 4) {
+        if (numPoints >= 4) {
             if (!hasLine(lines, maxPoint, prevSlope)) {
                 Line newLine = new Line(startPoint, maxPoint, prevSlope);
-                newLines.add(newLine);
+                lines.add(newLine);
             }
         }
-
-        return newLines;
     }
 
     private boolean hasLine(
@@ -113,34 +111,18 @@ public class FastCollinearPoints {
         return segments;
     }
 
-    private void checkPoints(Point[] points) {
-        if(points == null)
-            throw new IllegalArgumentException();
-
-        for (Point p : points){
-            if( p == null)
-                throw new IllegalArgumentException();
-        }
-
-        Arrays.sort(points);
-        for(int i = 0; i < points.length - 1; i++) {
-            if (points[i].compareTo(points[i + 1]) == 0)
-                throw new IllegalArgumentException();
-        }
-    }
-
-    private LineSegment createLineSegment(Point startPoint, Index[] sortedPoints, int startIndex, int endIndex){
+    private LineSegment createLineSegment(Point startPoint, Index[] sortedPoints, int startIndex, int endIndex) {
         int count = endIndex - startIndex + 1;
-        if(count >= 3) {
+        if (count >= 3) {
             Point min = startPoint;
             Point max = startPoint;
 
-            for(int i = startIndex; i <= endIndex; i++){
+            for (int i = startIndex; i <= endIndex; i++) {
                 Point point = sortedPoints[i].Point;
-                if(point.compareTo(min) < 0){
+                if (point.compareTo(min) < 0) {
                     min = point;
                 }
-                if(point.compareTo(max) > 0){
+                if (point.compareTo(max) > 0) {
                     max = point;
                 }
             }
@@ -176,7 +158,7 @@ public class FastCollinearPoints {
     }
 
     public LineSegment[] segments() {
-        return _lineSegments;
+        return Arrays.copyOf(_lineSegments, _lineSegments.length);
     }
 
     private class Index implements Comparable<Index> {
@@ -190,6 +172,18 @@ public class FastCollinearPoints {
 
         public int compareTo(Index o) {
             return Double.compare(Slope, o.Slope);
+        }
+    }
+
+    private class Line {
+        public Point FirstPoint;
+        public Point LastPoint;
+        public double Slope;
+
+        public Line(Point firstPoint, Point lastPoint, double slope) {
+            FirstPoint = firstPoint;
+            LastPoint = lastPoint;
+            Slope = slope;
         }
     }
 }
