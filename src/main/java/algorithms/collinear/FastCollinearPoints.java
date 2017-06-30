@@ -14,144 +14,74 @@ public class FastCollinearPoints {
                 throw new IllegalArgumentException();
         }
 
-        Point[] sortedPoints = Arrays.copyOf(points, points.length);
+        ArrayList<Line> lines = new ArrayList<Line>();
 
-        Arrays.sort(sortedPoints);
-
-        checkPointDuplicates(sortedPoints);
-
-        List<Line> lines = new ArrayList<Line>();
-
-        // - 3 - means we observe except last 3 points
-        for (int i = 0; i < sortedPoints.length - 3; i++) {
-            getLines(sortedPoints, i, lines);
+        for (Point p : points) {
+            FindLines(points, p, lines);
         }
 
-        _lineSegments = CreateLineSegments(lines);
+        _lineSegments = createLineSegments(lines);
     }
 
-    private void checkPointDuplicates(Point[] sortedPoints) {
-        for (int i = 0; i < sortedPoints.length - 1; i++) {
-            if (sortedPoints[i].compareTo(sortedPoints[i + 1]) == 0)
-                throw new IllegalArgumentException();
+    private void FindLines(Point[] points, Point currentPoint, List<Line> lines) {
+        Point[] pointsCopy = Arrays.copyOf(points, points.length);
+        Arrays.sort(pointsCopy, currentPoint.slopeOrder());
+
+        int index = 1;
+        while (index < pointsCopy.length) {
+            index = ProcessNextLine(pointsCopy, index, lines);
         }
     }
 
-    private void getLines(Point[] points, int pointIndex, List<Line> lines) {
-        if (points.length < 4) {
-            return;
-        }
+    private int ProcessNextLine(Point[] sortedPoints, int index, List<Line> lines) {
+        Point startPoint = sortedPoints[0];
 
-        Point startPoint = points[pointIndex];
+        int currentIndex = index;
 
-        Point[] slopePoints = Arrays.copyOfRange(points, pointIndex + 1, points.length);
+        Line line = null;
 
-        Arrays.sort(slopePoints, startPoint.slopeOrder());
+        while (currentIndex < sortedPoints.length) {
+            Point nextPoint = sortedPoints[currentIndex];
+            currentIndex++;
 
-        int numPoints = 2;
-        Point maxPoint = slopePoints[0];
-        double prevSlope = startPoint.slopeTo(maxPoint);
+            double slope = startPoint.slopeTo(nextPoint);
 
-        for (int i = 1; i < slopePoints.length; i++) {
-            Point point = slopePoints[i];
-
-            double slope = startPoint.slopeTo(point);
-
-            if (Double.compare(slope, prevSlope) == 0) {
-                if (point.compareTo(maxPoint) > 0) {
-                    maxPoint = point;
-                }
-
-                numPoints++;
-                continue;
-            }
-
-            if (numPoints >= 4) {
-                if (!hasLine(lines, maxPoint, prevSlope)) {
-                    Line newLine = new Line(startPoint, maxPoint, prevSlope);
-                    lines.add(newLine);
-                }
-            }
-
-            prevSlope = slope;
-            numPoints = 2;
-            maxPoint = point;
-        }
-
-        if (numPoints >= 4) {
-            if (!hasLine(lines, maxPoint, prevSlope)) {
-                Line newLine = new Line(startPoint, maxPoint, prevSlope);
-                lines.add(newLine);
+            if (line == null) {
+                line = new Line(startPoint, slope);
+                line.addPoint(nextPoint);
+            } else if (line.sameSlope(slope)) {
+                line.addPoint(nextPoint);
+            } else {
+                break;
             }
         }
+
+        if (line != null) {
+            line.addToLinesIfRequired(lines);
+        }
+
+        return currentIndex;
     }
 
-    private boolean hasLine(
-            Iterable<Line> lines,
-            Point lastPoint,
-            double slope) {
-        for (Line line : lines) {
-            if (line.LastPoint == lastPoint && Double.compare(line.Slope, slope) == 0) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private LineSegment[] CreateLineSegments(List<Line> lines) {
+    private LineSegment[] createLineSegments(List<Line> lines) {
         LineSegment[] segments = new LineSegment[lines.size()];
 
+        int index = 0;
         for (int i = 0; i < lines.size(); i++) {
             Line line = lines.get(i);
-
-            segments[i] = new LineSegment(line.FirstPoint, line.LastPoint);
+            segments[index] = line.createSegment();
+            index++;
         }
 
         return segments;
     }
 
-    private LineSegment createLineSegment(Point startPoint, Index[] sortedPoints, int startIndex, int endIndex) {
-        int count = endIndex - startIndex + 1;
-        if (count >= 3) {
-            Point min = startPoint;
-            Point max = startPoint;
-
-            for (int i = startIndex; i <= endIndex; i++) {
-                Point point = sortedPoints[i].Point;
-                if (point.compareTo(min) < 0) {
-                    min = point;
-                }
-                if (point.compareTo(max) > 0) {
-                    max = point;
-                }
-            }
-
-            return new LineSegment(min, max);
-        }
-
-        return null;
-    }
-
-    private Index[] sortPoints(Point startPoint, Point[] points) {
-        Index[] indexes = new Index[points.length - 1];
-        int index = 0;
-
-        for (Point p : points) {
-            if (p == startPoint) {
-                continue;
-            }
-
-            double slop = startPoint.slopeTo(p);
-            indexes[index] = new Index(p, slop);
-
-            index++;
-        }
-
-        Arrays.sort(indexes);
-
-        return indexes;
-    }
+//    private void checkPointDuplicates(Point[] sortedPoints) {
+//        for (int i = 0; i < sortedPoints.length - 1; i++) {
+//            if (sortedPoints[i].compareTo(sortedPoints[i + 1]) == 0)
+//                throw new IllegalArgumentException();
+//        }
+//    }
 
     public int numberOfSegments() {
         return _lineSegments.length;
@@ -161,29 +91,84 @@ public class FastCollinearPoints {
         return Arrays.copyOf(_lineSegments, _lineSegments.length);
     }
 
-    private class Index implements Comparable<Index> {
-        public Point Point;
-        public double Slope;
-
-        public Index(Point point, double slope) {
-            Point = point;
-            Slope = slope;
-        }
-
-        public int compareTo(Index o) {
-            return Double.compare(Slope, o.Slope);
-        }
-    }
-
     private class Line {
-        public Point FirstPoint;
-        public Point LastPoint;
-        public double Slope;
+        private ArrayList<Point> _points;
+        private double _slope;
 
-        public Line(Point firstPoint, Point lastPoint, double slope) {
-            FirstPoint = firstPoint;
-            LastPoint = lastPoint;
-            Slope = slope;
+        public Line(Point startPoint, double slope) {
+            _points = new ArrayList<Point>(4);
+            _slope = slope;
+
+            addPoint(startPoint);
+        }
+
+        public void addPoint(Point point) {
+            _points.add(point);
+        }
+
+        public boolean sameSlope(double slope) {
+            return Double.compare(_slope, slope) == 0;
+        }
+
+        public void addToLinesIfRequired(List<Line> lines) {
+            if (_points.size() < 4) {
+                return;
+            }
+
+            for (Line line : lines) {
+                if (theSame(line)) {
+                    return;
+                }
+            }
+
+            lines.add(this);
+        }
+
+        private boolean theSame(Line other) {
+            if (_points.size() != other._points.size()) {
+                return false;
+            }
+
+            if (Double.compare(_slope, other._slope) != 0) {
+                return false;
+            }
+
+            Point thisOrigin = getOrigin();
+            Point otherOrigin = other.getOrigin();
+
+            return thisOrigin.compareTo(otherOrigin) == 0;
+        }
+
+        private Point getOrigin() {
+            Point origin = _points.get(0);
+
+            for (int i = 1; i < _points.size(); i++) {
+                Point point = _points.get(i);
+
+                if (point.compareTo(origin) < 0) {
+                    origin = point;
+                }
+            }
+
+            return origin;
+        }
+
+        private Point getTail() {
+            Point tail = _points.get(0);
+
+            for (int i = 1; i < _points.size(); i++) {
+                Point point = _points.get(i);
+
+                if (point.compareTo(tail) > 0) {
+                    tail = point;
+                }
+            }
+
+            return tail;
+        }
+
+        public LineSegment createSegment() {
+            return new LineSegment(getOrigin(), getTail());
         }
     }
 }
