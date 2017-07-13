@@ -1,99 +1,136 @@
-package algorithms.kdTrees;
-
 import edu.princeton.cs.algs4.Point2D;
 import edu.princeton.cs.algs4.RectHV;
+import edu.princeton.cs.algs4.StdDraw;
 
 import java.util.ArrayList;
 
 public class KdTree {
     private Node _root;
+    private int _size;
 
     public boolean isEmpty() {
         return _root == null;
     }
 
     public int size() {
-        return count(_root);
-    }
-
-    private int count(Node currentNode) {
-        if (currentNode == null) {
-            return 0;
-        }
-
-        int count = 1;
-
-        if (currentNode.Left != null) {
-            count += count(currentNode.Left);
-        }
-
-        if (currentNode.Right != null) {
-            count += count(currentNode.Right);
-        }
-
-        return count;
+        return _size;
     }
 
     public void insert(Point2D p) {
+        if (p == null) {
+            throw new IllegalArgumentException();
+        }
+
         Node node = new Node();
         node.Point = p;
 
         if (_root == null) {
+            _size = 1;
             node.Level = 0;
+            node.Rect = new RectHV(0, 0, 1, 1);
             _root = node;
             return;
         }
 
-        Node targetNode = FindTargetNode(_root, p);
+        TargeNode tn = findTargetNode(_root, p);
 
-        int cmpResult = p.compareTo(targetNode.Point);
-
-        if (cmpResult == 0) {
+        if (tn.CompareResult == 0) {
             return;
-        } else if (cmpResult < 0) {
-            targetNode.Left = node;
-            node.Level = targetNode.Level + 1;
+        } else if (tn.CompareResult > 0) {
+            tn.Node.Left = node;
+            node.Level = tn.Node.Level + 1;
+
+            if (tn.Node.Level % 2 == 0) {
+                node.Rect = new RectHV(tn.Node.Rect.xmin(), tn.Node.Rect.ymin(), tn.Node.Point.x(), tn.Node.Rect.ymax());
+            } else {
+                node.Rect = new RectHV(tn.Node.Rect.xmin(), tn.Node.Rect.ymin(), tn.Node.Rect.xmax(), tn.Node.Point.y());
+            }
         } else {
-            targetNode.Right = node;
-            node.Level = targetNode.Level + 1;
+            tn.Node.Right = node;
+            node.Level = tn.Node.Level + 1;
+
+            if (tn.Node.Level % 2 == 0) {
+                node.Rect = new RectHV(tn.Node.Point.x(), tn.Node.Rect.ymin(), tn.Node.Rect.xmax(), tn.Node.Rect.ymax());
+            } else {
+                node.Rect = new RectHV(tn.Node.Rect.xmin(), tn.Node.Point.y(), tn.Node.Rect.xmax(), tn.Node.Rect.ymax());
+            }
         }
+
+        _size++;
     }
 
-    private Node FindTargetNode(Node currentNode, Point2D newPoint) {
+    private TargeNode findTargetNode(Node currentNode, Point2D newPoint) {
         int result = currentNode.compareTo(newPoint);
 
         if (result == 0) {
-            return currentNode;
+            TargeNode tn = new TargeNode();
+            tn.Node = currentNode;
+            tn.CompareResult = 0;
+            return tn;
         }
 
         if (result > 0) {
             if (currentNode.Left == null) {
-                return currentNode;
+                TargeNode tn = new TargeNode();
+                tn.Node = currentNode;
+                tn.CompareResult = result;
+                return tn;
             } else {
-                return FindTargetNode(currentNode.Left, newPoint);
+                return findTargetNode(currentNode.Left, newPoint);
             }
         } else {
             if (currentNode.Right == null) {
-                return currentNode;
+                TargeNode tn = new TargeNode();
+                tn.Node = currentNode;
+                tn.CompareResult = result;
+                return tn;
             } else {
-                return FindTargetNode(currentNode.Right, newPoint);
+                return findTargetNode(currentNode.Right, newPoint);
             }
         }
     }
 
     public boolean contains(Point2D p) {
+        if (p == null) {
+            throw new IllegalArgumentException();
+        }
+
         if (_root == null) {
             return false;
         }
 
-        Node target = FindTargetNode(_root, p);
-        return target.Point.compareTo(p) == 0;
+        TargeNode tn = findTargetNode(_root, p);
+        return tn.CompareResult == 0;
     }
 
     public void draw() {
+        StdDraw.setPenRadius(0.005);
+
+        draw(_root);
+    }
+
+    private void draw(Node node) {
+        if (node == null) {
+            return;
+        }
+
+        if (node.Level % 2 == 0) {
+            StdDraw.setPenColor(StdDraw.RED);
+            StdDraw.line(node.Point.x(), node.Rect.ymin(), node.Point.x(), node.Rect.ymax());
+        } else {
+            StdDraw.setPenColor(StdDraw.BLUE);
+            StdDraw.line(node.Rect.xmin(), node.Point.y(), node.Rect.xmax(), node.Point.y());
+        }
+
+        draw(node.Left);
+        draw(node.Right);
     }
 
     public Iterable<Point2D> range(RectHV rect) {
+        if (rect == null) {
+            throw new IllegalArgumentException();
+        }
+
         ArrayList<Point2D> points = new ArrayList<Point2D>();
 
         findPoints(rect, _root, points);
@@ -106,25 +143,16 @@ public class KdTree {
             return;
         }
 
+        if (!rect.intersects(currentNode.Rect)) {
+            return;
+        }
+
         if (rect.contains(currentNode.Point)) {
             points.add(currentNode.Point);
         }
 
-        if (currentNode.Level % 2 == 0) {
-            if (currentNode.Point.x() >= rect.xmin()) {
-                findPoints(rect, currentNode.Left, points);
-            }
-            if (currentNode.Point.x() <= rect.xmax()) {
-                findPoints(rect, currentNode.Right, points);
-            }
-        } else {
-            if (currentNode.Point.y() >= rect.ymin()) {
-                findPoints(rect, currentNode.Left, points);
-            }
-            if (currentNode.Point.y() <= rect.ymax()) {
-                findPoints(rect, currentNode.Right, points);
-            }
-        }
+        findPoints(rect, currentNode.Left, points);
+        findPoints(rect, currentNode.Right, points);
     }
 
     private static boolean isInRect(Point2D point, RectHV rect) {
@@ -132,44 +160,51 @@ public class KdTree {
     }
 
     public Point2D nearest(Point2D p) {
+        if (p == null) {
+            throw new IllegalArgumentException();
+        }
+
         if (_root == null) {
             return null;
         }
 
-        Point2D minPoint = findNearest(p, _root, _root.Point, Double.POSITIVE_INFINITY, 0);
-        return minPoint;
+        MinDist winner = new MinDist();
+        winner.Dist = Double.POSITIVE_INFINITY;
+        winner.Point = _root.Point;
+
+        winner = findNearest(p, _root, winner);
+
+        return winner.Point;
     }
 
-    private Point2D findNearest(
+    private MinDist findNearest(
             Point2D targetPoint,
             Node currentNode,
-            Point2D minPoint,
-            double minDist,
-            int level) {
+            MinDist winner) {
         if (currentNode == null) {
-            return minPoint;
+            return winner;
         }
 
-        double dist = targetPoint.distanceTo(currentNode.Point);
+        double distToRect = currentNode.Rect.distanceSquaredTo(targetPoint);
 
-        if (dist < minDist) {
-            minDist = dist;
-            minPoint = currentNode.Point;
+        if (distToRect > winner.Dist) {
+            return winner;
         }
 
-        int compareResult;
-        if (level % 2 == 0) {
-            // compare X axis
-            compareResult = Double.compare(targetPoint.x(), currentNode.Point.x());
+        double dist = targetPoint.distanceSquaredTo(currentNode.Point);
+
+        if (dist < winner.Dist) {
+            winner.Dist = dist;
+            winner.Point = currentNode.Point;
+        }
+
+        MinDist minLeft = findNearest(targetPoint, currentNode.Left, winner);
+        MinDist minRight = findNearest(targetPoint, currentNode.Right, winner);
+
+        if (minLeft.Dist < minRight.Dist) {
+            return minLeft;
         } else {
-            // compare Y axis
-            compareResult = Double.compare(targetPoint.y(), currentNode.Point.y());
-        }
-
-        if (compareResult < 0) {
-            return findNearest(targetPoint, currentNode.Left, minPoint, minDist, level + 1);
-        } else {
-            return findNearest(targetPoint, currentNode.Right, minPoint, minDist, level + 1);
+            return minRight;
         }
     }
 
@@ -178,13 +213,32 @@ public class KdTree {
         public Node Right;
         public int Level;
         public Point2D Point;
+        public RectHV Rect;
 
         public int compareTo(Point2D otherPoint) {
             if (Level % 2 == 0) {
-                return Double.compare(Point.x(), otherPoint.x());
+                int result = Double.compare(Point.x(), otherPoint.x());
+                if (result == 0) {
+                    result = Double.compare(Point.y(), otherPoint.y());
+                }
+                return result;
             } else {
-                return Double.compare(Point.y(), otherPoint.y());
+                int result = Double.compare(Point.y(), otherPoint.y());
+                if (result == 0) {
+                    result = Double.compare(Point.x(), otherPoint.x());
+                }
+                return result;
             }
         }
+    }
+
+    private class MinDist {
+        public Point2D Point;
+        public double Dist;
+    }
+
+    private class TargeNode {
+        public Node Node;
+        public int CompareResult;
     }
 }

@@ -1,5 +1,3 @@
-package algorithms.kdTrees;
-
 import edu.princeton.cs.algs4.Point2D;
 import edu.princeton.cs.algs4.RectHV;
 import org.junit.Assert;
@@ -66,7 +64,7 @@ public class KdTreeTests {
     public void range_returnsPointInsideTheRectangle() {
         KdTree kdTree = new KdTree();
 
-        kdTree.insert(new Point2D(0, 0));
+        kdTree.insert(new Point2D(0.1, 0.1));
         kdTree.insert(new Point2D(0.2, 0.2));
         kdTree.insert(new Point2D(0.25, 0.25));
         kdTree.insert(new Point2D(0.31, 0.28));
@@ -89,5 +87,31 @@ public class KdTreeTests {
         }
 
         Assert.assertEquals(2, count);
+    }
+
+    @Test
+    public void insert_useCase1_returnsExpected() {
+        KdTree kdTree = new KdTree();
+
+        kdTree.insert(new Point2D(0.5, 0.5));
+        kdTree.insert(new Point2D(0.7, 0.3));
+        kdTree.insert(new Point2D(0.75, 0.2));
+
+        Assert.assertTrue(kdTree.contains(new Point2D(0.5, 0.5)));
+        Assert.assertTrue(kdTree.contains(new Point2D(0.7, 0.3)));
+        Assert.assertTrue(kdTree.contains(new Point2D(0.75, 0.2)));
+    }
+
+    @Test
+    public void insert_useCase2_returnsExpected() {
+        KdTree kdTree = new KdTree();
+
+        kdTree.insert(new Point2D(0.5, 0.5));
+        kdTree.insert(new Point2D(0.6, 0.8));
+        kdTree.insert(new Point2D(0.7, 0.8));
+
+        Assert.assertTrue(kdTree.contains(new Point2D(0.5, 0.5)));
+        Assert.assertTrue(kdTree.contains(new Point2D(0.6, 0.8)));
+        Assert.assertTrue(kdTree.contains(new Point2D(0.7, 0.8)));
     }
 }

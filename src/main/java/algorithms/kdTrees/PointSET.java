@@ -1,5 +1,3 @@
-package algorithms.kdTrees;
-
 import edu.princeton.cs.algs4.Point2D;
 import edu.princeton.cs.algs4.RectHV;
 import edu.princeton.cs.algs4.StdDraw;
@@ -19,19 +17,35 @@ public class PointSET {
     }
 
     public void insert(Point2D p) {
+        if (p == null) {
+            throw new IllegalArgumentException();
+        }
+
         _set.add(p);
     }
 
     public boolean contains(Point2D p) {
+        if (p == null) {
+            throw new IllegalArgumentException();
+        }
+
         return _set.contains(p);
     }
 
     public void draw() {
         StdDraw.setPenColor(StdDraw.BLACK);
         StdDraw.setPenRadius(0.01);
+
+        for(Point2D point : _set){
+            StdDraw.point(point.x(), point.y());
+        }
     }
 
     public Iterable<Point2D> range(RectHV rect) {
+        if (rect == null) {
+            throw new IllegalArgumentException();
+        }
+
         ArrayList<Point2D> points = new ArrayList<Point2D>();
 
         for (Point2D point : _set) {
@@ -48,11 +62,15 @@ public class PointSET {
     }
 
     public Point2D nearest(Point2D p) {
+        if (p == null) {
+            throw new IllegalArgumentException();
+        }
+
         Point2D minPoint = null;
         double minDist = Double.POSITIVE_INFINITY;
 
         for (Point2D point : _set) {
-            double dist = point.distanceTo(p);
+            double dist = point.distanceSquaredTo(p);
 
             if (dist < minDist) {
                 minPoint = point;
